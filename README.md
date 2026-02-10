@@ -58,8 +58,8 @@ This is a blockchain-based lottery system where:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Lottery-DApp.git
-   cd Lottery-DApp
+   git clone https://github.com/adityajoshi18vk-art/Blockchain-Lottery-Wallet.git
+   cd Blockchain-Lottery-Wallet
    ```
 
 2. **Start a local server**
@@ -131,13 +131,6 @@ The lottery smart contract is deployed on **Sepolia Testnet**.
 - If you **redeploy the contract**, update the `CONTRACT_ADDRESS` in `app.js` (line 2)
 - This DApp uses **Sepolia testnet** — no real ETH is involved
 
----
-
-## 📸 Screenshots
-
-> _Add screenshots of your DApp here after deployment_
-
----
 
 ## 📄 License
 
