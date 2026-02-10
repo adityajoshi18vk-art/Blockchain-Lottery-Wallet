@@ -224,7 +224,7 @@ async function startLottery() {
         await tx.wait();
 
         updateStatus('🚀 Lottery started! You are the manager.', 'success');
-        showNotification('🚀 Lottery Started!\n\nYou are now the manager.\nOther users can now enter by sending 1 SEP ETH.\n\nPick a winner when at least 3 participants have joined.');
+        showNotification('🚀 Lottery Started!\n\nYou are now the manager.\nOther users can now enter by sending 0.002 SEP ETH.\n\nPick a winner when at least 3 participants have joined.');
 
         await updateUI();
 
@@ -253,7 +253,7 @@ async function enterLottery() {
         // Send exactly 1 ETH to trigger receive()
         const tx = await signer.sendTransaction({
             to: CONTRACT_ADDRESS,
-            value: ethers.parseEther('1'),
+            value: 2000000000000000n, // Exactly 0.002 ETH in wei
             gasLimit: 100000n
         });
 
