@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery DApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Notification Overlay -->
+    <div id="notificationOverlay" class="notification-overlay hidden">
+        <div class="notification-box">
+            <span class="notification-icon">⚠️</span>
+            <p id="notificationText"></p>
+            <button id="notificationCloseBtn" onclick="closeNotification()">OK</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Lottery DApp</h1>
+            <p class="subtitle">Decentralized Lottery on Ethereum</p>
+        </header>
+
+        <main>
+            <section class="card wallet-section">
+                <h2>Wallet Connection</h2>
+                <button id="connectWalletBtn">Connect Wallet</button>
+                <p>Address: <span id="walletAddress">Not Connected</span></p>
+            </section>
+
+            <section class="card enter-section">
+                <div class="gamble-badge">GAMBLE IN!!!</div>
+                <h2>Lottery Price: 0.002 SEP ETH</h2>
+                <button id="enterLotteryBtn">Enter Lottery</button>
+            </section>
+
+            <section class="card balance-section">
+                <h2>Contract Balance</h2>
+                <p>Balance: <span id="contractBalance">0 SEP ETH</span></p>
+                <button id="refreshBalanceBtn">Refresh Balance</button>
+            </section>
+
+            <section class="card manager-section">
+                <h2>Manager Controls</h2>
+                <button id="pickWinnerBtn">Pick Winner</button>
+            </section>
+
+            <section class="card status-section">
+                <h2>Status</h2>
+                <p id="statusMessage">Ready</p>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
