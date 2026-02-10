@@ -24,7 +24,11 @@
     <div class="container">
         <header>
             <h1>Lottery DApp</h1>
-            <p class="subtitle">Decentralized Lottery on Ethereum</p>
+            <p class="subtitle">Decentralized Lottery on Sepolia Testnet</p>
+            <div id="lotteryStatus" class="lottery-status inactive">
+                <span class="status-dot"></span>
+                <span id="lotteryStatusText">Lottery Inactive</span>
+            </div>
         </header>
 
         <main>
@@ -34,9 +38,17 @@
                 <p>Address: <span id="walletAddress">Not Connected</span></p>
             </section>
 
-            <section class="card enter-section">
+            <!-- Start Lottery Section -->
+            <section class="card start-section" id="startSection">
+                <h2>No Active Lottery</h2>
+                <p>Start a new lottery round — you'll become the manager.</p>
+                <button id="startLotteryBtn">🚀 Start Lottery</button>
+            </section>
+
+            <!-- Enter Lottery Section (shown when lottery is active) -->
+            <section class="card enter-section" id="enterSection" style="display: none;">
                 <div class="gamble-badge">GAMBLE IN!!!</div>
-                <h2>Lottery Price: 0.002 SEP ETH</h2>
+                <h2>Lottery Price: 1 SEP ETH</h2>
                 <button id="enterLotteryBtn">Enter Lottery</button>
             </section>
 
@@ -46,9 +58,11 @@
                 <button id="refreshBalanceBtn">Refresh Balance</button>
             </section>
 
-            <section class="card manager-section">
+            <!-- Manager Controls (shown only to manager when lottery is active) -->
+            <section class="card manager-section" id="managerSection" style="display: none;">
                 <h2>Manager Controls</h2>
-                <button id="pickWinnerBtn">Pick Winner</button>
+                <p>You started this lottery. Pick a winner when ready.</p>
+                <button id="pickWinnerBtn">🏆 Stop & Declare Winner</button>
             </section>
 
             <section class="card status-section">

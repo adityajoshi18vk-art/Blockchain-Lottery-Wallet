@@ -1,10 +1,19 @@
-// Contract Configuration
+// Contract Configuration — UPDATE THIS after deploying the new contract
 const CONTRACT_ADDRESS = '0xcd082cc9ea4e02c9113376c9d5992c176b9f3101';
 const CONTRACT_ABI = [
     {
         "inputs": [],
+        "name": "startLottery",
+        "outputs": [],
         "stateMutability": "nonpayable",
-        "type": "constructor"
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "lotteryActive",
+        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [],
@@ -49,12 +58,18 @@ const CONTRACT_ABI = [
 
 // DOM Elements
 const connectWalletBtn = document.getElementById('connectWalletBtn');
+const startLotteryBtn = document.getElementById('startLotteryBtn');
 const enterLotteryBtn = document.getElementById('enterLotteryBtn');
 const refreshBalanceBtn = document.getElementById('refreshBalanceBtn');
 const pickWinnerBtn = document.getElementById('pickWinnerBtn');
 const walletAddress = document.getElementById('walletAddress');
 const contractBalance = document.getElementById('contractBalance');
 const statusMessage = document.getElementById('statusMessage');
+const startSection = document.getElementById('startSection');
+const enterSection = document.getElementById('enterSection');
+const managerSection = document.getElementById('managerSection');
+const lotteryStatus = document.getElementById('lotteryStatus');
+const lotteryStatusText = document.getElementById('lotteryStatusText');
 
 // Global variables
 let provider = null;
@@ -64,6 +79,7 @@ let currentAccount = null;
 
 // Event Listeners
 connectWalletBtn.addEventListener('click', connectWallet);
+startLotteryBtn.addEventListener('click', startLottery);
 enterLotteryBtn.addEventListener('click', enterLottery);
 refreshBalanceBtn.addEventListener('click', refreshBalance);
 pickWinnerBtn.addEventListener('click', pickWinner);
@@ -82,13 +98,13 @@ function isFileProtocol() {
 async function connectWallet() {
     if (isFileProtocol()) {
         updateStatus('Cannot connect from file:// - use a local server', 'error');
-        alert('Please run a local server:\n1. Open terminal in project folder\n2. Run: npx -y serve .\n3. Open http://localhost:3000');
+        showNotification('Please run a local server:\n1. Open terminal in project folder\n2. Run: npx -y serve .\n3. Open http://localhost:3000');
         return;
     }
 
     if (!isMetaMaskInstalled()) {
         updateStatus('Please install MetaMask!', 'error');
-        alert('MetaMask is not installed. Please install it from metamask.io');
+        showNotification('MetaMask is not installed.\n\nPlease install it from metamask.io');
         return;
     }
 
@@ -107,15 +123,13 @@ async function connectWallet() {
 
         if (network.chainId !== 11155111n) {
             updateStatus('Please switch to Sepolia network!', 'error');
-            alert('Wrong network! Please switch to Sepolia testnet in MetaMask.\n\nCurrent chain ID: ' + network.chainId + '\nRequired: 11155111 (Sepolia)');
+            showNotification('Wrong network!\n\nPlease switch to Sepolia testnet in MetaMask.\n\nCurrent chain ID: ' + network.chainId + '\nRequired: 11155111 (Sepolia)');
 
-            // Try to switch to Sepolia
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: '0xaa36a7' }] // 11155111 in hex
+                    params: [{ chainId: '0xaa36a7' }]
                 });
-                // Reload after switch
                 window.location.reload();
             } catch (switchError) {
                 console.error('Failed to switch network:', switchError);
@@ -125,46 +139,18 @@ async function connectWallet() {
 
         signer = await provider.getSigner();
         currentAccount = accounts[0];
-
         console.log('Connected account:', currentAccount);
 
         // Create contract instance
         contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-        // Check if this is manager account
-        const managerAddress = await contract.manager();
-        const isManager = managerAddress.toLowerCase() === currentAccount.toLowerCase();
-
-        // If manager hasn't connected yet, only allow manager
-        if (!sessionStorage.getItem('managerConnected') && !isManager) {
-            updateStatus('Please connect with Manager account first!', 'error');
-            showNotification('⚠️ Please switch to the Manager account (Account 1) in and try again.\n\nInitial setup requires the Manager to connect first.');
-
-            // Reset connection
-            provider = null;
-            signer = null;
-            contract = null;
-            currentAccount = null;
-            connectWalletBtn.textContent = 'Connect Wallet';
-            walletAddress.textContent = 'Not Connected';
-            return;
-        }
-
-        // Mark that manager has connected at least once
-        if (isManager) {
-            sessionStorage.setItem('managerConnected', 'true');
-        }
 
         walletAddress.textContent = shortenAddress(currentAccount);
         connectWalletBtn.textContent = 'Connected';
 
         updateStatus('Wallet connected on Sepolia!', 'success');
 
-        // Auto refresh balance
-        await refreshBalance();
-
-        // Check if manager and show/hide Pick Winner button
-        await checkIfManager();
+        // Update the entire UI based on contract state
+        await updateUI();
 
     } catch (error) {
         console.error('Connection failed:', error);
@@ -176,28 +162,45 @@ async function connectWallet() {
     }
 }
 
-// Check if current account is manager
-async function checkIfManager() {
-    // Hide button by default
-    pickWinnerBtn.style.display = 'none';
+// Update UI based on contract state
+async function updateUI() {
+    if (!contract) return;
 
     try {
+        const isActive = await contract.lotteryActive();
         const managerAddress = await contract.manager();
-        console.log('Manager address from contract:', managerAddress);
-        console.log('Current account:', currentAccount);
-
         const isManager = managerAddress.toLowerCase() === currentAccount.toLowerCase();
-        console.log('Is manager:', isManager);
+        const isNoManager = managerAddress === '0x0000000000000000000000000000000000000000';
 
-        if (isManager) {
-            pickWinnerBtn.style.display = 'block';
-            console.log('Pick Winner button shown - you are the manager');
+        console.log('Lottery active:', isActive, 'Manager:', managerAddress, 'Is manager:', isManager);
+
+        if (isActive) {
+            // Lottery is active
+            lotteryStatus.className = 'lottery-status active';
+            lotteryStatusText.textContent = 'Lottery Active — Manager: ' + shortenAddress(managerAddress);
+
+            startSection.style.display = 'none';
+            enterSection.style.display = 'block';
+
+            if (isManager) {
+                managerSection.style.display = 'block';
+            } else {
+                managerSection.style.display = 'none';
+            }
         } else {
-            pickWinnerBtn.style.display = 'none';
-            console.log('Pick Winner button hidden - you are not the manager');
+            // Lottery is inactive
+            lotteryStatus.className = 'lottery-status inactive';
+            lotteryStatusText.textContent = 'Lottery Inactive — Start a new round!';
+
+            startSection.style.display = 'block';
+            enterSection.style.display = 'none';
+            managerSection.style.display = 'none';
         }
+
+        await refreshBalance();
+
     } catch (error) {
-        console.error('Error checking manager:', error);
+        console.error('Error updating UI:', error);
     }
 }
 
@@ -206,7 +209,38 @@ function shortenAddress(address) {
     return address.slice(0, 6) + '...' + address.slice(-4);
 }
 
-// Enter Lottery - Send ETH to contract
+// Start Lottery — anyone can call, they become manager
+async function startLottery() {
+    if (!signer || !contract) {
+        updateStatus('Please connect wallet first', 'warning');
+        return;
+    }
+
+    try {
+        updateStatus('Starting lottery...');
+
+        const tx = await contract.startLottery();
+        updateStatus('Transaction sent, waiting for confirmation...');
+        await tx.wait();
+
+        updateStatus('🚀 Lottery started! You are the manager.', 'success');
+        showNotification('🚀 Lottery Started!\n\nYou are now the manager.\nOther users can now enter by sending 1 SEP ETH.\n\nPick a winner when at least 3 participants have joined.');
+
+        await updateUI();
+
+    } catch (error) {
+        console.error('Start lottery failed:', error);
+        if (error.code === 4001) {
+            updateStatus('Transaction rejected by user', 'warning');
+        } else if (error.message.includes('already active')) {
+            updateStatus('Lottery is already active!', 'error');
+        } else {
+            updateStatus('Failed: ' + (error.reason || error.message), 'error');
+        }
+    }
+}
+
+// Enter Lottery - Send 1 ETH to contract
 async function enterLottery() {
     if (!signer || !contract) {
         updateStatus('Please connect wallet first', 'warning');
@@ -216,11 +250,11 @@ async function enterLottery() {
     try {
         updateStatus('Entering lottery...');
 
-        // Send exactly 0.002 ETH (2 finney) to trigger receive()
+        // Send exactly 1 ETH to trigger receive()
         const tx = await signer.sendTransaction({
             to: CONTRACT_ADDRESS,
-            value: 2000000000000000n, // Exactly 0.002 ETH in wei
-            gasLimit: 100000n // Explicit gas limit
+            value: ethers.parseEther('1'),
+            gasLimit: 100000n
         });
 
         updateStatus('Transaction sent, waiting for confirmation...');
@@ -235,14 +269,14 @@ async function enterLottery() {
         if (error.code === 4001) {
             updateStatus('Transaction rejected by user', 'warning');
         } else if (error.code === 'CALL_EXCEPTION') {
-            updateStatus('Transaction reverted - check contract requirements', 'error');
+            updateStatus('Transaction reverted — is the lottery active?', 'error');
         } else {
             updateStatus('Failed to enter: ' + (error.reason || error.message), 'error');
         }
     }
 }
 
-// Refresh Balance - Use provider.getBalance since contract.getBalance requires manager
+// Refresh Balance
 async function refreshBalance() {
     if (!provider) {
         updateStatus('Please connect wallet first', 'warning');
@@ -250,21 +284,15 @@ async function refreshBalance() {
     }
 
     try {
-        updateStatus('Refreshing balance...');
-
-        // Use provider to get contract balance (works for everyone)
         const balance = await provider.getBalance(CONTRACT_ADDRESS);
         contractBalance.textContent = ethers.formatEther(balance) + ' SEP ETH';
-
-        updateStatus('Balance updated', 'success');
-
     } catch (error) {
         console.error('Refresh balance failed:', error);
         updateStatus('Failed to get balance', 'error');
     }
 }
 
-// Pick Winner - Manager only
+// Pick Winner — Manager only (Stop & Declare Winner)
 async function pickWinner() {
     if (!signer || !contract) {
         updateStatus('Please connect wallet first', 'warning');
@@ -327,13 +355,14 @@ async function pickWinner() {
             showNotification(`🎉 Winner Selected!\n\nPrize: ${prizeAmount} SEP ETH\n\nTx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`);
         }
 
-        await refreshBalance();
+        // Lottery ended — update UI to show Start button again
+        await updateUI();
 
     } catch (error) {
         console.error('Pick winner failed:', error);
         if (error.code === 4001) {
             updateStatus('Transaction rejected by user', 'warning');
-        } else if (error.message.includes('participants')) {
+        } else if (error.message.includes('participants') || error.message.includes('3')) {
             updateStatus('Need at least 3 participants to pick winner', 'error');
         } else {
             updateStatus('Failed: ' + (error.reason || error.message), 'error');
@@ -361,12 +390,11 @@ if (window.ethereum) {
             currentAccount = accounts[0];
             walletAddress.textContent = shortenAddress(currentAccount);
 
-            // Reconnect contract with new signer
             signer = await provider.getSigner();
             contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
             updateStatus('Account changed', 'success');
-            await checkIfManager();
+            await updateUI();
         }
     });
 

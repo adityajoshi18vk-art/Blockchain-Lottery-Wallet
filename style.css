@@ -48,6 +48,57 @@ h1 {
     letter-spacing: 0.02em;
 }
 
+/* ===== LOTTERY STATUS INDICATOR ===== */
+.lottery-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.lottery-status.active {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.lottery-status.inactive {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.lottery-status.active .status-dot {
+    background: #10B981;
+    box-shadow: 0 0 6px #10B981;
+    animation: pulse 1.5s infinite;
+}
+
+.lottery-status.inactive .status-dot {
+    background: #EF4444;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
 main {
     display: flex;
     flex-direction: column;
@@ -111,6 +162,24 @@ main {
     border-radius: 8px;
     margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+/* ===== START LOTTERY SECTION ===== */
+.start-section {
+    background: #F0FDF4;
+    border: 1px solid #BBF7D0;
+}
+
+#startLotteryBtn {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: #FFFFFF;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 12px 24px;
+}
+
+#startLotteryBtn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
 }
 
 /* ===== ENTER LOTTERY SECTION ===== */
@@ -185,15 +254,17 @@ button:disabled {
     background: #15803D;
 }
 
-/* Pick Winner - Amber/Warning */
+/* Pick Winner - Red/Stop */
 #pickWinnerBtn {
-    background: #F59E0B;
+    background: linear-gradient(135deg, #EF4444, #DC2626);
     color: #FFFFFF;
-    display: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 12px 24px;
 }
 
 #pickWinnerBtn:hover {
-    background: #D97706;
+    background: linear-gradient(135deg, #DC2626, #B91C1C);
 }
 
 /* ===== STATUS SECTION ===== */
