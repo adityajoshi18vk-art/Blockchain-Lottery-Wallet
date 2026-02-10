@@ -1,5 +1,5 @@
 // Contract Configuration — UPDATE THIS after deploying the new contract
-const CONTRACT_ADDRESS = '0xcd082cc9ea4e02c9113376c9d5992c176b9f3101';
+const CONTRACT_ADDRESS = '0x701a809235fc2eed3495ca52f6c14994ee099916';
 const CONTRACT_ABI = [
     {
         "inputs": [],
