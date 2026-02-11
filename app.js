@@ -60,7 +60,7 @@ const CONTRACT_ABI = [
 const connectWalletBtn = document.getElementById('connectWalletBtn');
 const startLotteryBtn = document.getElementById('startLotteryBtn');
 const enterLotteryBtn = document.getElementById('enterLotteryBtn');
-const refreshBalanceBtn = document.getElementById('refreshBalanceBtn');
+
 const pickWinnerBtn = document.getElementById('pickWinnerBtn');
 const walletAddress = document.getElementById('walletAddress');
 const contractBalance = document.getElementById('contractBalance');
@@ -81,7 +81,7 @@ let currentAccount = null;
 connectWalletBtn.addEventListener('click', connectWallet);
 startLotteryBtn.addEventListener('click', startLottery);
 enterLotteryBtn.addEventListener('click', enterLottery);
-refreshBalanceBtn.addEventListener('click', refreshBalance);
+
 pickWinnerBtn.addEventListener('click', pickWinner);
 
 // Check if MetaMask is installed
